@@ -3,6 +3,9 @@ package com.atguigu.ggkt.vo.vod;
 import lombok.Data;
 import io.swagger.annotations.ApiModelProperty;
 
+/**
+ * 查询条件类
+ */
 @Data
 public class TeacherQueryVo {
 	

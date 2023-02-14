@@ -1,6 +1,8 @@
 package com.atguigu.ggkt.vod.config;
 
+import com.baomidou.mybatisplus.extension.plugins.PaginationInterceptor;
 import org.mybatis.spring.annotation.MapperScan;
+import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
 /**
@@ -9,6 +11,15 @@ import org.springframework.context.annotation.Configuration;
  * @Version 1.0
  */
 @Configuration
-@MapperScan("com.atguigu.ggkt.vod.mapper")
+@MapperScan("com.atguigu.ggkt.vod.mapper")    //mapper映射
 public class VodConfig {
+
+    /**
+     * 配置分页插件
+     * @return
+     */
+    @Bean
+    public PaginationInterceptor paginationInterceptor(){
+        return new PaginationInterceptor();
+    }
 }
