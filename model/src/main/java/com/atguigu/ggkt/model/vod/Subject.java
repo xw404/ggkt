@@ -1,13 +1,11 @@
 package com.atguigu.ggkt.model.vod;
 
-import com.atguigu.ggkt.model.base.BaseEntity;
 import com.baomidou.mybatisplus.annotation.*;
 import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
-
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
@@ -53,6 +51,7 @@ public class Subject {
 	@TableField("sort")
 	private Integer sort;
 
+	//需要手动设置
 	@ApiModelProperty(value = "是否包含子节点")
 	@TableField(exist = false)
 	private boolean hasChildren;
