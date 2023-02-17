@@ -38,11 +38,11 @@ public class TeacherController {
     @GetMapping(value = "/findAll")
     public Result findAllTeacher(){
         //模拟异常
-        try {
+ /*       try {
             int i = 1/0;
         }catch (Exception e){
             throw new GgktException(201,"自定义的异常GgktException");
-        }
+        }*/
 
         List<Teacher> list = teacherService.list();
         return Result.ok(list).message("查询成功");

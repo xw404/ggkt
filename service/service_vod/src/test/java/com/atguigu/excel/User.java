@@ -1,4 +1,4 @@
-package com.atguigu.xecel;
+package com.atguigu.excel;
 
 import com.alibaba.excel.annotation.ExcelProperty;
 import lombok.Data;
@@ -11,10 +11,11 @@ import lombok.Data;
 @Data
 public class User {
 
-    @ExcelProperty(value = "用户编号")
+    //注意：index表示第几列（对应关系映射）
+    @ExcelProperty(value = "用户编号",index = 0)
     private int id;
 
-    @ExcelProperty(value = "用户名称")
+    @ExcelProperty(value = "用户名称",index = 1)
     private String name;
 
 }

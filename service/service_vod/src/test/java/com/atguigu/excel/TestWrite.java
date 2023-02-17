@@ -1,4 +1,4 @@
-package com.atguigu.xecel;
+package com.atguigu.excel;
 
 import com.alibaba.excel.EasyExcel;
 
