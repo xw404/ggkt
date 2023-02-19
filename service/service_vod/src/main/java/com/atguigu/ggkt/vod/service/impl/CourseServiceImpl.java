@@ -5,6 +5,7 @@ import com.atguigu.ggkt.model.vod.CourseDescription;
 import com.atguigu.ggkt.model.vod.Subject;
 import com.atguigu.ggkt.model.vod.Teacher;
 import com.atguigu.ggkt.vo.vod.CourseFormVo;
+import com.atguigu.ggkt.vo.vod.CoursePublishVo;
 import com.atguigu.ggkt.vo.vod.CourseQueryVo;
 import com.atguigu.ggkt.vod.mapper.CourseMapper;
 import com.atguigu.ggkt.vod.service.CourseDescriptionService;
@@ -15,10 +16,11 @@ import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import org.springframework.beans.BeanUtils;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.util.StringUtils;
 
+import javax.annotation.Resource;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -35,15 +37,17 @@ import java.util.Map;
 public class CourseServiceImpl extends ServiceImpl<CourseMapper, Course> implements CourseService {
 
 
-    @Autowired
+    @Resource
     private TeacherService teacherService;
-    @Autowired
+    @Resource
     private SubjectService subjectService;
-    @Autowired
+    @Resource
     private CourseDescriptionService descriptionService;
+    @Resource
+    private CourseMapper courseMapper;
     //点播课程的查询功能
     @Override
-    public Map<String, Object> fingPageCouse(Page<Course> pageParam,
+    public Map<String, Object> fingPageCourse(Page<Course> pageParam,
                                              CourseQueryVo courseQueryVo) {
         //获取条件值
         String title = courseQueryVo.getTitle();
@@ -101,8 +105,6 @@ public class CourseServiceImpl extends ServiceImpl<CourseMapper, Course> impleme
 
     /**
      * 根据Id查询课程信息
-     * @param id
-     * @return
      */
     @Override
     public CourseFormVo getCourseInfoById(Long id) {
@@ -128,7 +130,24 @@ public class CourseServiceImpl extends ServiceImpl<CourseMapper, Course> impleme
         //修改描述信息
         CourseDescription courseDescription = new CourseDescription();
         courseDescription.setDescription(courseFormVo.getDescription());
+        //设置课程描述的id
+        courseDescription.setId(course.getId());
         descriptionService.updateById(courseDescription);
+    }
+
+    //根据课程Id查询发布的课程信息
+    @Override
+    public CoursePublishVo getCoursePublishVo(Long id) {
+        return courseMapper.selectCoursePublishVoById(id);
+    }
+
+    //课程的最终发布（修改课程状态）
+    @Override
+    public void publishCourse(Long id) {
+        Course course = courseMapper.selectById(id);
+        course.setStatus(1);  //代表课程已经发布
+        course.setPublishTime(new Date());
+        courseMapper.updateById(course);
     }
 
     //获取id对应的名称，进行封装  最终显示

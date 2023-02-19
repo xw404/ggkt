@@ -1,4 +1,4 @@
-package com.atguigu.ggkt.vo.acl;
+package com.atguigu.ggkt.vo.activity.acl;
 
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;

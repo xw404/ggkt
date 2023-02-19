@@ -3,6 +3,7 @@ package com.atguigu.ggkt.vod.controller;
 import com.atguigu.ggkt.model.vod.Course;
 import com.atguigu.ggkt.result.Result;
 import com.atguigu.ggkt.vo.vod.CourseFormVo;
+import com.atguigu.ggkt.vo.vod.CoursePublishVo;
 import com.atguigu.ggkt.vo.vod.CourseQueryVo;
 import com.atguigu.ggkt.vod.service.CourseService;
 import com.baomidou.mybatisplus.extension.api.R;
@@ -35,7 +36,7 @@ public class CourseController {
                              @PathVariable Long limit,
                              CourseQueryVo courseQueryVo){
         Page<Course> pageParam = new Page<>(page,limit);
-        Map<String,Object> map = courseService.fingPageCouse(pageParam,courseQueryVo);
+        Map<String,Object> map = courseService.fingPageCourse(pageParam,courseQueryVo);
         return Result.ok(map);
     }
 
@@ -60,7 +61,24 @@ public class CourseController {
     @PostMapping("/update")
     public Result update(@RequestBody CourseFormVo courseFormVo){
         courseService.updateCourseId(courseFormVo);
-        return Result.ok(courseFormVo);
+        //返回课程id  后续使用
+        return Result.ok(courseFormVo.getId());
+    }
+
+    //根据课程Id查询发布的课程信息
+    @ApiOperation("id查询发布课程的信息")
+    @GetMapping("/getCoursePublishVo/{id}")
+    public Result getCoursePublishVo(@PathVariable Long id){
+        CoursePublishVo coursePublishVo = courseService.getCoursePublishVo(id);
+        return Result.ok(coursePublishVo);
+    }
+
+    //课程的最终发布
+    @ApiOperation("课程的最终发布")
+    @PostMapping("publishCourse/{id}")
+    public Result publishCourse(@PathVariable Long id){
+        courseService.publishCourse(id);
+        return Result.ok();
     }
 
 
