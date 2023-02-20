@@ -8,10 +8,7 @@ import com.atguigu.ggkt.vo.vod.CourseFormVo;
 import com.atguigu.ggkt.vo.vod.CoursePublishVo;
 import com.atguigu.ggkt.vo.vod.CourseQueryVo;
 import com.atguigu.ggkt.vod.mapper.CourseMapper;
-import com.atguigu.ggkt.vod.service.CourseDescriptionService;
-import com.atguigu.ggkt.vod.service.CourseService;
-import com.atguigu.ggkt.vod.service.SubjectService;
-import com.atguigu.ggkt.vod.service.TeacherService;
+import com.atguigu.ggkt.vod.service.*;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
@@ -45,6 +42,12 @@ public class CourseServiceImpl extends ServiceImpl<CourseMapper, Course> impleme
     private CourseDescriptionService descriptionService;
     @Resource
     private CourseMapper courseMapper;
+
+    @Resource
+    private VideoService videoService;
+
+    @Resource
+    private ChapterService chapterService;
     //点播课程的查询功能
     @Override
     public Map<String, Object> fingPageCourse(Page<Course> pageParam,
@@ -148,6 +151,19 @@ public class CourseServiceImpl extends ServiceImpl<CourseMapper, Course> impleme
         course.setStatus(1);  //代表课程已经发布
         course.setPublishTime(new Date());
         courseMapper.updateById(course);
+    }
+
+    //课程的删除
+    @Override
+    public void removeCourseId(Long id) {
+        //根据课程id删除小节
+        videoService.removeVideoByCourseId(id);
+        //根据课程id删除章节
+        chapterService.removeChapterByCourseId(id);
+        //根据课程id删除课程描述
+        descriptionService.removeById(id);
+        //根据课程id删除课程
+        courseMapper.deleteById(id);
     }
 
     //获取id对应的名称，进行封装  最终显示

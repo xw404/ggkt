@@ -1,20 +1,18 @@
-package com.atguigu.ggkt.vod;
+package com.atguigu.ggkt;
 
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.cloud.client.discovery.EnableDiscoveryClient;
-import org.springframework.context.annotation.ComponentScan;
 
 /**
  * @Author 小吴
- * @Date 2023/02/14 16:28
+ * @Date 2023/02/20 15:20
  * @Version 1.0
  */
 @SpringBootApplication
-@EnableDiscoveryClient   //服务注册
-@ComponentScan(basePackages = "com.atguigu")
-public class ServiceVodApplication {
+@EnableDiscoveryClient
+public class ServiceOrderApplication {
     public static void main(String[] args) {
-        SpringApplication.run(ServiceVodApplication.class, args);
+        SpringApplication.run(ServiceOrderApplication.class, args);
     }
 }

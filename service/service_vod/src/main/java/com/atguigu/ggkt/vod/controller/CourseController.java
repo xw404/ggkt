@@ -8,6 +8,7 @@ import com.atguigu.ggkt.vo.vod.CourseQueryVo;
 import com.atguigu.ggkt.vod.service.CourseService;
 import com.baomidou.mybatisplus.extension.api.R;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
+import com.sun.org.apache.regexp.internal.RE;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -25,7 +26,7 @@ import java.util.Map;
 @Api(tags = "课程管理接口")
 @RestController
 @RequestMapping("admin/vod/course")
-@CrossOrigin
+//@CrossOrigin
 public class CourseController {
     @Autowired
     private CourseService courseService;
@@ -78,6 +79,14 @@ public class CourseController {
     @PostMapping("publishCourse/{id}")
     public Result publishCourse(@PathVariable Long id){
         courseService.publishCourse(id);
+        return Result.ok();
+    }
+
+    //删除课程接口
+    @ApiOperation("删除课程接口")
+    @DeleteMapping("/remove/{id}")
+    public Result remove(@PathVariable Long id){
+        courseService.removeCourseId(id);
         return Result.ok();
     }
 

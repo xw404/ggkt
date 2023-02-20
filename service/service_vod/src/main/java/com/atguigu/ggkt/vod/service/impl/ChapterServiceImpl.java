@@ -8,13 +8,10 @@ import com.atguigu.ggkt.vod.mapper.ChapterMapper;
 import com.atguigu.ggkt.vod.service.ChapterService;
 import com.atguigu.ggkt.vod.service.VideoService;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
-import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
-import org.apache.commons.collections4.BagUtils;
 import org.springframework.beans.BeanUtils;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-
+import javax.annotation.Resource;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -29,8 +26,10 @@ import java.util.List;
 @Service
 public class ChapterServiceImpl extends ServiceImpl<ChapterMapper, Chapter> implements ChapterService {
 
-    @Autowired
+    @Resource
     private VideoService videoService;
+    @Resource
+    private ChapterMapper chapterMapper;
     //1 课程章节和小节的列表方法
     @Override
     public List<ChapterVo> getTreeList(Long courseId) {
@@ -71,5 +70,13 @@ public class ChapterServiceImpl extends ServiceImpl<ChapterMapper, Chapter> impl
         }
         //放入集合
         return finalChapterList;
+    }
+
+    //根据课程id删除章节
+    @Override
+    public void removeChapterByCourseId(Long id) {
+        LambdaQueryWrapper<Chapter> queryWrapper = new LambdaQueryWrapper<>();
+        queryWrapper.eq(Chapter::getCourseId,id);
+        chapterMapper.delete(queryWrapper);
     }
 }

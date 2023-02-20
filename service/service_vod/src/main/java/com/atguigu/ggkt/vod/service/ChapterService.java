@@ -16,4 +16,6 @@ import java.util.List;
 public interface ChapterService extends IService<Chapter> {
 
     List<ChapterVo> getTreeList(Long courseId);
+
+    void removeChapterByCourseId(Long id);
 }

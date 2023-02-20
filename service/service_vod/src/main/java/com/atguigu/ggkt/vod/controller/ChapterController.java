@@ -22,7 +22,7 @@ import java.util.List;
  */
 @RestController
 @RequestMapping(value="/admin/vod/chapter")
-@CrossOrigin
+//@CrossOrigin
 public class ChapterController {
 
     @Autowired
@@ -58,7 +58,7 @@ public class ChapterController {
         return Result.ok();
     }
 
-    //删除章节
+    //删除章节(删除章节的时候并未要求删除小节)
     @DeleteMapping(value = "remove/{id}")
     public Result remove(@PathVariable Long id){
         chapterService.removeById(id);
