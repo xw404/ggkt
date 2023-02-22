@@ -28,12 +28,15 @@ import java.util.Map;
 @Service
 public class OrderInfoServiceImpl extends ServiceImpl<OrderInfoMapper, OrderInfo> implements OrderInfoService {
 
+    @Resource
+    private OrderInfoMapper orderInfoMapper;
     //订单详情
     @Resource
     private OrderDetailService orderDetailService;
     //订单列表
     @Override
-    public Map<String, Object> selectOrderInfoPage(Page<OrderInfo> pageParam, OrderInfoQueryVo orderInfoQueryVo) {
+    public Map<String, Object> selectOrderInfoPage(Page<OrderInfo> pageParam,
+                                                   OrderInfoQueryVo orderInfoQueryVo) {
         //通过orderInfoQueryVo获取查询条件
         Long userId = orderInfoQueryVo.getUserId();
         String outTradeNo = orderInfoQueryVo.getOutTradeNo();//交易号
@@ -62,12 +65,12 @@ public class OrderInfoServiceImpl extends ServiceImpl<OrderInfoMapper, OrderInfo
             wrapper.le(OrderInfo::getCreateTime,createTimeEnd);
         }
         //调用方法，实现分页
-        Page<OrderInfo> pages = baseMapper.selectPage(pageParam, wrapper);
+        Page<OrderInfo> pages = orderInfoMapper.selectPage(pageParam, wrapper);
         long totalCount = pages.getTotal();
         long pageCount = pages.getPages();
         List<OrderInfo> records = pages.getRecords(); //每页数据的集合
         //订单中包含详情，根据订单ID查询详情
-        records.stream().forEach(item->{
+        records.stream().forEach(item ->{
             this.getOrderDetail(item);
         });
         //封装集合返回
@@ -86,7 +89,7 @@ public class OrderInfoServiceImpl extends ServiceImpl<OrderInfoMapper, OrderInfo
         OrderDetail orderDetail = orderDetailService.getById(id);  //一对一关系，使用同一个id
         if(orderDetail != null){
             String courseName = orderDetail.getCourseName();
-            orderDetail.getParam().put("courseName",courseName);
+            orderInfo.getParam().put("courseName",courseName);
         }
         return orderInfo;
     }
