@@ -18,4 +18,6 @@ import com.baomidou.mybatisplus.extension.service.IService;
 public interface CouponInfoService extends IService<CouponInfo> {
 
     IPage<CouponUse> selectCouponUsePage(Page<CouponUse> pageParam, CouponUseQueryVo couponUseQueryVo);
+
+    void updateCouponInfoUseStatus(Long couponUseId, Long orderId);
 }

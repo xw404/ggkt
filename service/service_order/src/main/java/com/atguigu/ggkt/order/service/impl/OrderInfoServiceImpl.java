@@ -1,18 +1,30 @@
 package com.atguigu.ggkt.order.service.impl;
 
+import com.atguigu.ggkt.activity.CouponInfoFeignClient;
+import com.atguigu.ggkt.client.CourseFeignClient;
+import com.atguigu.ggkt.client.user.UserInfoFeignClient;
+import com.atguigu.ggkt.exception.GgktException;
+import com.atguigu.ggkt.model.activity.CouponInfo;
 import com.atguigu.ggkt.model.order.OrderDetail;
 import com.atguigu.ggkt.model.order.OrderInfo;
+import com.atguigu.ggkt.model.user.UserInfo;
+import com.atguigu.ggkt.model.vod.Course;
 import com.atguigu.ggkt.order.mapper.OrderInfoMapper;
 import com.atguigu.ggkt.order.service.OrderDetailService;
 import com.atguigu.ggkt.order.service.OrderInfoService;
+import com.atguigu.ggkt.utils.AuthContextHolder;
+import com.atguigu.ggkt.utils.OrderNoUtils;
+import com.atguigu.ggkt.vo.order.OrderFormVo;
 import com.atguigu.ggkt.vo.order.OrderInfoQueryVo;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.util.StringUtils;
 
 import javax.annotation.Resource;
+import java.math.BigDecimal;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -33,6 +45,85 @@ public class OrderInfoServiceImpl extends ServiceImpl<OrderInfoMapper, OrderInfo
     //订单详情
     @Resource
     private OrderDetailService orderDetailService;
+    @Autowired
+    private CourseFeignClient courseFeignClient;
+    @Autowired
+    private CouponInfoFeignClient couponInfoFeignClient;
+    @Autowired
+    private UserInfoFeignClient userInfoFeignClient;
+
+    //生成订单方法
+    @Override
+    public Long submitOrder(OrderFormVo orderFormVo) {
+        //1 获取生成订单条件值
+        Long userId = AuthContextHolder.getUserId();    //当前用户的id（和前端有关）
+        Long courseId = orderFormVo.getCourseId();  //课程id
+        Long couponId = orderFormVo.getCouponId();  //优惠卷id
+        //2 判断当前用户,针对当前课程是否已经生成了订单
+        //课程id,用户id
+        LambdaQueryWrapper<OrderDetail> wapper = new LambdaQueryWrapper<>();
+        wapper.eq(OrderDetail::getCourseId,courseId);
+        wapper.eq(OrderDetail::getUserId,userId);
+        OrderDetail orderDetailExists = orderDetailService.getOne(wapper);
+        if(orderDetailExists != null){
+            //订单存在
+            return orderDetailExists.getId();//直接返回订单id
+        }
+
+        //3 根据课程id查询课程信息
+        Course course = courseFeignClient.getById(courseId);
+        if(course == null){
+            throw new GgktException(20001,"课程不存在");
+        }
+        //4 根据用户id查询用户信息
+        //注意获取当前用户id比较麻烦，需要前后端一起（工具类封装在common工具中）
+        UserInfo userInfo = userInfoFeignClient.getById(userId);
+        if(userInfo == null){
+            throw new GgktException(20001,"用户不存在");
+        }
+        //5 根据优惠卷的id查询优惠信息
+        BigDecimal couponReduce = new BigDecimal(0);   //金额处理
+        if(couponId != null){   //有优惠卷再进行查询
+            CouponInfo couponInfo = couponInfoFeignClient.getById(couponId);
+            couponReduce = couponInfo.getAmount();   //优惠额度
+        }
+        //6 封装订单生成需要的数据到对象，完成添加订单
+        //6.1封装数据到orderInfo中添加订单基本信息表
+        OrderInfo orderInfo = new OrderInfo();
+        orderInfo.setUserId(userId);
+        orderInfo.setNickName(userInfo.getNickName());
+        orderInfo.setPhone(userInfo.getPhone());
+        orderInfo.setProvince(userInfo.getProvince());
+        orderInfo.setOriginAmount(course.getPrice());
+        orderInfo.setCouponReduce(couponReduce);
+        orderInfo.setFinalAmount(orderInfo.getOriginAmount()
+                .subtract(orderInfo.getCouponReduce()));
+        orderInfo.setOutTradeNo(OrderNoUtils.getOrderNo());  //生成订单流水号
+        orderInfo.setTradeBody(course.getTitle());
+        orderInfo.setOrderStatus("0");
+        baseMapper.insert(orderInfo);
+
+        //6.2封装数据到orderDetail，添加订单详情信息表
+        OrderDetail orderDetail = new OrderDetail();
+        orderDetail.setOrderId(orderInfo.getId());
+        orderDetail.setUserId(userId);
+        orderDetail.setCourseId(courseId);
+        orderDetail.setCourseName(course.getTitle());
+        orderDetail.setCover(course.getCover());
+        orderDetail.setOriginAmount(course.getPrice());
+        orderDetail.setCouponReduce(new BigDecimal(0));
+        orderDetail.setFinalAmount(orderDetail.getOriginAmount().
+                subtract(orderDetail.getCouponReduce()));
+        orderDetailService.save(orderDetail);
+
+        //7 更新优惠卷数据库。表示已经使用
+        if(null != orderFormVo.getCouponUseId()) {
+            couponInfoFeignClient.updateCouponInfoUseStatus(orderFormVo.getCouponUseId(), orderInfo.getId());
+        }
+        //8 返回订单id
+        return orderInfo.getId();
+    }
+
     //订单列表
     @Override
     public Map<String, Object> selectOrderInfoPage(Page<OrderInfo> pageParam,
@@ -80,6 +171,7 @@ public class OrderInfoServiceImpl extends ServiceImpl<OrderInfoMapper, OrderInfo
         map.put("records",records);
         return map;
     }
+
 
     //查询订单详情数据
     private OrderInfo getOrderDetail(OrderInfo orderInfo) {

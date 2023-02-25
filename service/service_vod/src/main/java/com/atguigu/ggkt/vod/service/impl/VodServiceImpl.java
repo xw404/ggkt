@@ -1,6 +1,8 @@
 package com.atguigu.ggkt.vod.service.impl;
 
 import com.atguigu.ggkt.exception.GgktException;
+import com.atguigu.ggkt.model.vod.Video;
+import com.atguigu.ggkt.vod.service.VideoService;
 import com.atguigu.ggkt.vod.service.VodService;
 import com.atguigu.ggkt.vod.utils.ConstantPropertiesUtil;
 import com.qcloud.vod.VodUploadClient;
@@ -13,7 +15,12 @@ import com.tencentcloudapi.common.profile.HttpProfile;
 import com.tencentcloudapi.vod.v20180717.VodClient;
 import com.tencentcloudapi.vod.v20180717.models.DeleteMediaRequest;
 import com.tencentcloudapi.vod.v20180717.models.DeleteMediaResponse;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
+
+import java.util.HashMap;
+import java.util.Map;
 
 /**
  * @Author 小吴
@@ -23,6 +30,11 @@ import org.springframework.stereotype.Service;
 //都需要到腾讯云的使用手册上查看调用方法
 @Service
 public class VodServiceImpl implements VodService {
+    @Autowired
+    private VideoService videoService;
+
+    @Value("${tencent.video.appid}")
+    private String appId;
     //上传视频
     @Override
     public String updateVideo() {
@@ -73,5 +85,19 @@ public class VodServiceImpl implements VodService {
             System.out.println(e.toString());
             throw new GgktException(20001,"删除视频失败");
         }
+    }
+
+    //点播视屏播放功能
+    @Override
+    public Map<String, Object> getPlayAuth(Long courseId, Long videoId) {
+        //根据小节id获取小节对象。获取腾讯云视频id
+        Video video = videoService.getById(videoId);
+        if(video == null) {
+            throw new GgktException(20001,"小节信息不存在");
+        }
+        Map<String,Object> map = new HashMap<>();
+        map.put("videoSourceId",video.getVideoSourceId());
+        map.put("appId",appId);
+        return map;
     }
 }

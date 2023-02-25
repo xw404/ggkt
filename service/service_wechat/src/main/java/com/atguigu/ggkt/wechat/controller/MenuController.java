@@ -36,7 +36,7 @@ public class MenuController {
         menuService.syncMenu();
         return Result.ok();
     }
-
+    //公众号菜单的删除
     @ApiOperation(value = "删除菜单")
     @DeleteMapping("removeMenu")
     public Result removeMenu() {
@@ -44,7 +44,8 @@ public class MenuController {
         return Result.ok(null);
     }
 
-    //获取access_token
+    //理解原理，没用到
+    /*//获取access_token
     @GetMapping("getAccessToken")
     public Result getAccessToken() {
         try {
@@ -69,7 +70,7 @@ public class MenuController {
             e.printStackTrace();
             throw new GgktException(20001,"获取access_token失败");
         }
-    }
+    }*/
 
     //获取所有菜单，按照一级和二级菜单封装
     @GetMapping("findMenuInfo")

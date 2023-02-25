@@ -68,7 +68,6 @@ public class MenuServiceImpl extends ServiceImpl<MenuMapper, Menu> implements Me
         //封装最外层的button部分
         JSONObject button = new JSONObject();
         button.put("button",buttonList);
-
         try {
             String menuId = this.wxMpService.getMenuService().menuCreate(button.toJSONString());
             System.out.println("menuId ="+menuId);

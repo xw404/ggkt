@@ -4,12 +4,11 @@ import com.atguigu.ggkt.model.vod.Course;
 import com.atguigu.ggkt.model.vod.CourseDescription;
 import com.atguigu.ggkt.model.vod.Subject;
 import com.atguigu.ggkt.model.vod.Teacher;
-import com.atguigu.ggkt.vo.vod.CourseFormVo;
-import com.atguigu.ggkt.vo.vod.CoursePublishVo;
-import com.atguigu.ggkt.vo.vod.CourseQueryVo;
+import com.atguigu.ggkt.vo.vod.*;
 import com.atguigu.ggkt.vod.mapper.CourseMapper;
 import com.atguigu.ggkt.vod.service.*;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
+import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import org.springframework.beans.BeanUtils;
@@ -48,6 +47,7 @@ public class CourseServiceImpl extends ServiceImpl<CourseMapper, Course> impleme
 
     @Resource
     private ChapterService chapterService;
+
     //点播课程的查询功能
     @Override
     public Map<String, Object> fingPageCourse(Page<Course> pageParam,
@@ -164,6 +164,98 @@ public class CourseServiceImpl extends ServiceImpl<CourseMapper, Course> impleme
         descriptionService.removeById(id);
         //根据课程id删除课程
         courseMapper.deleteById(id);
+    }
+
+    //根据课程分类查询课程的列表信息
+    @Override
+    public Map<String ,Object> findPage(Page<Course> pageParam,
+                                    CourseQueryVo courseQueryVo) {
+        //获取条件值
+        String title = courseQueryVo.getTitle();//名称
+        Long subjectId = courseQueryVo.getSubjectId();//二级分类
+        Long subjectParentId = courseQueryVo.getSubjectParentId();//一级分类
+        Long teacherId = courseQueryVo.getTeacherId();//讲师
+        //封装条件
+        QueryWrapper<Course> wrapper = new QueryWrapper<>();
+        if(!StringUtils.isEmpty(title)) {
+            wrapper.like("title",title);
+        }
+        if(!StringUtils.isEmpty(subjectId)) {
+            wrapper.eq("subject_id",subjectId);
+        }
+        if(!StringUtils.isEmpty(subjectParentId)) {
+            wrapper.eq("subject_parent_id",subjectParentId);
+        }
+        if(!StringUtils.isEmpty(teacherId)) {
+            wrapper.eq("teacher_id",teacherId);
+        }
+        //调用方法查询
+        Page<Course> pages = baseMapper.selectPage(pageParam, wrapper);
+
+        long totalCount = pages.getTotal();//总记录数
+        long totalPage = pages.getPages();//总页数
+        long currentPage = pages.getCurrent();//当前页
+        long size = pages.getSize();//每页记录数
+        //每页数据集合
+        //遍历获取讲师名称还有课程分类名称
+        List<Course> records = pages.getRecords();
+        records.stream().forEach(item -> {
+            this.getTeacherOrSubjectName(item);
+        });
+        Map<String,Object> map = new HashMap<>();
+        map.put("totalCount",totalCount);
+        map.put("totalPage",totalPage);
+        map.put("records",records);
+        return map;
+    }
+    //获取讲师和分类名称
+    private Course getTeacherOrSubjectName(Course course) {
+        Teacher teacher = teacherService.getById(course.getTeacherId());
+        if(teacher != null) {
+            course.getParam().put("teacherName",teacher.getName());
+        }
+        //一级分类
+        Subject subjectOne = subjectService.getById(course.getSubjectParentId());
+        if(subjectOne != null) {
+            course.getParam().put("subjectParentTitle",subjectOne.getTitle());
+        }
+        //二级分类
+        Subject subjectTwo = subjectService.getById(course.getSubjectId());
+        if(subjectTwo != null) {
+            course.getParam().put("subjectTitle",subjectTwo.getTitle());
+        }
+        return course;
+    }
+
+
+    //根据课程id查询课程的详情信息
+    @Override
+    public Map<String, Object> getInfoById(Long courseId) {
+        //view_count浏览数量加一
+        Course course = baseMapper.selectById(courseId);
+        course.setViewCount(course.getViewCount()+1);
+        baseMapper.updateById(course);
+        //根据课程id查询数据
+        //根据id查询课程详情
+        CourseVo courseVo = baseMapper.selectCourseById(courseId);
+        //课程章节小节数据
+        List<ChapterVo> chapterVoList = chapterService.getTreeList(courseId);
+        //课程描述
+        CourseDescription courseDescription = descriptionService.getById(courseId);
+        //课程所属的讲师
+        Teacher teacher = teacherService.getById(course.getTeacherId());
+        //TODO后续完善
+        Boolean isBuy = false;
+        //封装返回
+        Map<String ,Object> map = new HashMap<>();
+        map.put("courseVo", courseVo);
+        map.put("chapterVoList", chapterVoList);
+        map.put("description", null != courseDescription ?
+                courseDescription.getDescription() : "");
+        map.put("teacher", teacher);
+        map.put("isBuy", isBuy);//是否购买
+        return map;
+
     }
 
     //获取id对应的名称，进行封装  最终显示
