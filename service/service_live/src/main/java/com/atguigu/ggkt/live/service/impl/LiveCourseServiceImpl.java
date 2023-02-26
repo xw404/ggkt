@@ -6,15 +6,16 @@ import com.atguigu.ggkt.client.CourseFeignClient;
 import com.atguigu.ggkt.exception.GgktException;
 import com.atguigu.ggkt.live.mtcloud.CommonResult;
 import com.atguigu.ggkt.live.mtcloud.MTCloud;
-import com.atguigu.ggkt.live.service.LiveCourseAccountService;
-import com.atguigu.ggkt.live.service.LiveCourseDescriptionService;
-import com.atguigu.ggkt.model.live.LiveCourse;
+import com.atguigu.ggkt.live.service.*;
+import com.atguigu.ggkt.model.live.*;
 import com.atguigu.ggkt.live.mapper.LiveCourseMapper;
-import com.atguigu.ggkt.live.service.LiveCourseService;
-import com.atguigu.ggkt.model.live.LiveCourseAccount;
-import com.atguigu.ggkt.model.live.LiveCourseDescription;
 import com.atguigu.ggkt.model.vod.Teacher;
+import com.atguigu.ggkt.utils.DateUtil;
+import com.atguigu.ggkt.vo.live.LiveCourseConfigVo;
 import com.atguigu.ggkt.vo.live.LiveCourseFormVo;
+import com.atguigu.ggkt.vo.live.LiveCourseGoodsView;
+import com.atguigu.ggkt.vo.live.LiveCourseVo;
+import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
@@ -22,10 +23,10 @@ import org.joda.time.DateTime;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.util.CollectionUtils;
 
 import javax.annotation.Resource;
-import java.util.HashMap;
-import java.util.List;
+import java.util.*;
 
 /**
  * <p>
@@ -49,6 +50,13 @@ public class LiveCourseServiceImpl extends ServiceImpl<LiveCourseMapper, LiveCou
 
     @Autowired
     private LiveCourseAccountService liveCourseAccountService;
+
+    @Autowired
+    private LiveCourseConfigService liveCourseConfigService;
+
+    @Autowired
+    private LiveCourseGoodsService liveCourseGoodsService;
+
     //直播课程的列表方法
     @Override
     public IPage<LiveCourse> selectPage(Page<LiveCourse> pageParam) {
@@ -209,5 +217,132 @@ public class LiveCourseServiceImpl extends ServiceImpl<LiveCourseMapper, LiveCou
         }catch (Exception e){
             e.printStackTrace();
         }
+    }
+
+    //获取直播的配置信息
+    @Override
+    public LiveCourseConfigVo getCourseConfig(Long id) {
+        //根据课程id查询出配置
+        LiveCourseConfigVo liveCourseConfigVo = new LiveCourseConfigVo();
+        LiveCourseConfig liveCourseConfig = liveCourseConfigService.getConseConfigCourseId(id);
+        if(null != liveCourseConfig) {
+            //查询直播课商品列表
+            List<LiveCourseGoods> liveCourseGoodsList = liveCourseGoodsService.findGoodsLiveCourseId(id);
+            //封装数据
+            BeanUtils.copyProperties(liveCourseConfig, liveCourseConfigVo);
+            liveCourseConfigVo.setLiveCourseGoodsList(liveCourseGoodsList);
+        }
+        return liveCourseConfigVo;
+    }
+
+    //修改直播配置
+    @Override
+    public void updateConfig(LiveCourseConfigVo liveCourseConfigVo) {
+        //1 修改直播的配置表里面的信息
+        LiveCourseConfig liveCourseConfig = new LiveCourseConfig();
+        BeanUtils.copyProperties(liveCourseConfigVo,liveCourseConfig);
+        if(liveCourseConfigVo.getId()==null){  //没有id表示不存在则添加数据
+            liveCourseConfigService.save(liveCourseConfig);
+        }else {
+            liveCourseConfigService.updateById(liveCourseConfig);
+        }
+        //2 修改直播商品表信息(先删除在添加)
+        //删除
+        LambdaQueryWrapper<LiveCourseGoods> wrapper = new LambdaQueryWrapper<>();
+        wrapper.eq(LiveCourseGoods::getLiveCourseId,liveCourseConfigVo.getLiveCourseId());
+        liveCourseGoodsService.remove(wrapper);
+        //添加
+        if(!CollectionUtils.isEmpty(liveCourseConfigVo.getLiveCourseGoodsList())) {
+            liveCourseGoodsService.saveBatch(liveCourseConfigVo.getLiveCourseGoodsList());
+        }
+        //3 修改直播平台的数据
+        this.updateLifeConfig(liveCourseConfigVo);
+    }
+
+
+    /**
+     * 修改直播配置
+     * @param liveCourseConfigVo
+     */
+    private void updateLifeConfig(LiveCourseConfigVo liveCourseConfigVo) {
+        LiveCourse liveCourse =
+                baseMapper.selectById(liveCourseConfigVo.getLiveCourseId());
+        //封装平台方法的参数
+        HashMap<Object,Object> options = new HashMap<Object, Object>();
+        //界面模式
+        options.put("pageViewMode", liveCourseConfigVo.getPageViewMode());
+        //观看人数开关
+        JSONObject number = new JSONObject();
+        number.put("enable", liveCourseConfigVo.getNumberEnable());
+        options.put("number", number.toJSONString());
+        //观看人数开关
+        JSONObject store = new JSONObject();
+        number.put("enable", liveCourseConfigVo.getStoreEnable());
+        number.put("type", liveCourseConfigVo.getStoreType());
+        options.put("store", number.toJSONString());
+        //商城列表
+        List<LiveCourseGoods> liveCourseGoodsList = liveCourseConfigVo.getLiveCourseGoodsList();
+        if(!CollectionUtils.isEmpty(liveCourseGoodsList)) {
+            List<LiveCourseGoodsView> liveCourseGoodsViewList = new ArrayList<>();
+            for(LiveCourseGoods liveCourseGoods : liveCourseGoodsList) {
+                LiveCourseGoodsView liveCourseGoodsView = new LiveCourseGoodsView();
+                BeanUtils.copyProperties(liveCourseGoods, liveCourseGoodsView);
+                liveCourseGoodsViewList.add(liveCourseGoodsView);
+            }
+            JSONObject goodsListEdit = new JSONObject();
+            goodsListEdit.put("status", "0");
+            options.put("goodsListEdit ", goodsListEdit.toJSONString());
+            options.put("goodsList", JSON.toJSONString(liveCourseGoodsViewList));
+        }
+
+        try {
+            String res = mtCloudClient.courseUpdateLifeConfig(liveCourse.getCourseId().toString(),
+                    options);
+            CommonResult<JSONObject> commonResult = JSON.parseObject(res, CommonResult.class);
+            if(Integer.parseInt(commonResult.getCode()) != MTCloud.CODE_SUCCESS) {
+                throw new GgktException(20001,"修改配置信息失败");
+            }
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    //获取最近的直播课程
+    @Override
+    public List<LiveCourseVo> findLatelyList() {
+        //(通过xml语句实现)
+        List<LiveCourseVo> liveCourseVoList = baseMapper.findLatelyList();
+        for (LiveCourseVo liveCourseVo : liveCourseVoList) {
+            //封装开始和结束时间
+            liveCourseVo.setStartTimeString(
+                    new DateTime(liveCourseVo.getStartTime()).toString("yyyy年MM月dd HH:mm"));
+            liveCourseVo.setEndTimeString(
+                    new DateTime(liveCourseVo.getEndTime()).toString("HH:mm"));
+            //封装讲师信息
+            Long teacherId = liveCourseVo.getTeacherId();
+            Teacher teacher = courseFeignClient.getTeacherInfo(teacherId);
+            liveCourseVo.setTeacher(teacher);
+            //封装直播的状态
+            liveCourseVo.setLiveStatus(this.getLiveStatus(liveCourseVo));
+        }
+        return liveCourseVoList;
+    }
+    /**
+     * 直播状态 0：未开始 1：直播中 2：直播结束
+     * @param liveCourse
+     * @return
+     */
+    private int getLiveStatus(LiveCourse liveCourse) {
+        // 直播状态 0：未开始 1：直播中 2：直播结束
+        int liveStatus = 0;
+        Date curTime = new Date();
+        if(DateUtil.dateCompare(curTime, liveCourse.getStartTime())) {
+            liveStatus = 0;
+        } else if(DateUtil.dateCompare(curTime, liveCourse.getEndTime())) {
+            liveStatus = 1;
+        } else {
+            liveStatus = 2;
+        }
+        return liveStatus;
     }
 }

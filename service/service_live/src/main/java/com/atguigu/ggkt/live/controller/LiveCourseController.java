@@ -4,13 +4,18 @@ package com.atguigu.ggkt.live.controller;
 import com.atguigu.ggkt.live.service.LiveCourseAccountService;
 import com.atguigu.ggkt.live.service.LiveCourseService;
 import com.atguigu.ggkt.model.live.LiveCourse;
+import com.atguigu.ggkt.model.live.LiveCourseAccount;
 import com.atguigu.ggkt.result.Result;
+import com.atguigu.ggkt.vo.live.LiveCourseConfigVo;
 import com.atguigu.ggkt.vo.live.LiveCourseFormVo;
+import com.atguigu.ggkt.vo.live.LiveCourseVo;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import io.swagger.annotations.ApiOperation;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
 
 /**
  * <p>
@@ -75,6 +80,33 @@ public class LiveCourseController {
     public Result update(@RequestBody LiveCourseFormVo liveCourseVo) {
         liveCourseService.updateLiveById(liveCourseVo);
         return Result.ok(null);
+    }
+
+    @ApiOperation(value = "获取直播账号信息")
+    @GetMapping("getLiveCourseAccount/{id}")
+    public Result<LiveCourseAccount> getLiveCourseAccount(@PathVariable Long id) {
+        LiveCourseAccount liveCourseAccount = liveCourseAccountService.getLiveCourseAccountCourseId(id);
+        return Result.ok(liveCourseAccount);
+    }
+    @ApiOperation(value = "获取直播的配置信息")
+    @GetMapping("getCourseConfig/{id}")
+    public Result getCourseConfig(@PathVariable Long id) {
+        LiveCourseConfigVo liveCourseConfigVo = liveCourseService.getCourseConfig(id);
+        return Result.ok(liveCourseConfigVo);
+    }
+
+    @ApiOperation(value = "修改配置")
+    @PutMapping("updateConfig")
+    public Result updateConfig(@RequestBody LiveCourseConfigVo liveCourseConfigVo) {
+        liveCourseService.updateConfig(liveCourseConfigVo);
+        return Result.ok(null);
+    }
+
+    @ApiOperation(value = "获取最近的直播")
+    @GetMapping("findLatelyList")
+    public Result findLatelyList() {
+        List<LiveCourseVo> list = liveCourseService.findLatelyList();
+        return Result.ok(list);
     }
 }
 

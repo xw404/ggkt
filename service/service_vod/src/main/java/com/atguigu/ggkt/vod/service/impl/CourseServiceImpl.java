@@ -258,6 +258,16 @@ public class CourseServiceImpl extends ServiceImpl<CourseMapper, Course> impleme
 
     }
 
+    //查询所有课程
+    @Override
+    public List<Course> findlist() {
+        List<Course> list = baseMapper.selectList(null);
+        list.stream().forEach(item -> {
+            this.getTeacherOrSubjectName(item);
+        });
+        return list;
+    }
+
     //获取id对应的名称，进行封装  最终显示
     private Course getNameById(Course course) {
         //根据讲师id获取讲师名称

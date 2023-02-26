@@ -9,6 +9,7 @@ import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.IService;
 
+import java.util.List;
 import java.util.Map;
 
 /**
@@ -38,4 +39,6 @@ public interface CourseService extends IService<Course> {
     Map<String ,Object> findPage(Page<Course> pageParam, CourseQueryVo courseQueryVo);
 
     Map<String, Object> getInfoById(Long courseId);
+
+    List<Course> findlist();
 }

@@ -3,6 +3,7 @@ package com.atguigu.ggkt.live.service.impl;
 import com.atguigu.ggkt.model.live.LiveCourseAccount;
 import com.atguigu.ggkt.live.mapper.LiveCourseAccountMapper;
 import com.atguigu.ggkt.live.service.LiveCourseAccountService;
+import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import org.springframework.stereotype.Service;
 
@@ -17,4 +18,12 @@ import org.springframework.stereotype.Service;
 @Service
 public class LiveCourseAccountServiceImpl extends ServiceImpl<LiveCourseAccountMapper, LiveCourseAccount> implements LiveCourseAccountService {
 
+    //获取直播账号信息
+    @Override
+    public LiveCourseAccount getLiveCourseAccountCourseId(Long id) {
+        LambdaQueryWrapper<LiveCourseAccount> wrapper = new LambdaQueryWrapper<>();
+        wrapper.eq(LiveCourseAccount::getLiveCourseId,id);
+        LiveCourseAccount liveCourseAccount = baseMapper.selectOne(wrapper);
+        return liveCourseAccount;
+    }
 }

@@ -3,6 +3,7 @@ package com.atguigu.ggkt.live.service.impl;
 import com.atguigu.ggkt.live.mapper.LiveCourseConfigMapper;
 import com.atguigu.ggkt.live.service.LiveCourseConfigService;
 import com.atguigu.ggkt.model.live.LiveCourseConfig;
+import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import org.springframework.stereotype.Service;
 
@@ -17,4 +18,10 @@ import org.springframework.stereotype.Service;
 @Service
 public class LiveCourseConfigServiceImpl extends ServiceImpl<LiveCourseConfigMapper, LiveCourseConfig> implements LiveCourseConfigService {
 
+    @Override
+    public LiveCourseConfig getConseConfigCourseId(Long liveCourseId) {
+        return baseMapper.selectOne(new LambdaQueryWrapper<LiveCourseConfig>().eq(
+                LiveCourseConfig::getLiveCourseId,
+                liveCourseId));
+    }
 }

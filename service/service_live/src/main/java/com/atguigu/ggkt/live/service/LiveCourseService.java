@@ -1,9 +1,13 @@
 package com.atguigu.ggkt.live.service;
 import com.atguigu.ggkt.model.live.LiveCourse;
+import com.atguigu.ggkt.vo.live.LiveCourseConfigVo;
 import com.atguigu.ggkt.vo.live.LiveCourseFormVo;
+import com.atguigu.ggkt.vo.live.LiveCourseVo;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.IService;
+
+import java.util.List;
 
 
 /**
@@ -28,4 +32,10 @@ public interface LiveCourseService extends IService<LiveCourse> {
 
     //更新直播课程信息
     void updateLiveById(LiveCourseFormVo liveCourseVo);
+
+    LiveCourseConfigVo getCourseConfig(Long id);
+
+    void updateConfig(LiveCourseConfigVo liveCourseConfigVo);
+
+    List<LiveCourseVo> findLatelyList();
 }

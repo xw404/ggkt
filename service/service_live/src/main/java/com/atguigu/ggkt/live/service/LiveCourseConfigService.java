@@ -12,4 +12,5 @@ import com.baomidou.mybatisplus.extension.service.IService;
  */
 public interface LiveCourseConfigService extends IService<LiveCourseConfig> {
 
+    LiveCourseConfig getConseConfigCourseId(Long id);
 }

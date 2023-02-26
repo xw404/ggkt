@@ -13,4 +13,6 @@ import com.baomidou.mybatisplus.extension.service.IService;
  */
 public interface LiveCourseAccountService extends IService<LiveCourseAccount> {
 
+    //获取直播账号信息
+    LiveCourseAccount getLiveCourseAccountCourseId(Long id);
 }

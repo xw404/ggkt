@@ -14,6 +14,7 @@ import io.swagger.annotations.ApiOperation;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.List;
 import java.util.Map;
 /**
  * <p>
@@ -30,6 +31,11 @@ import java.util.Map;
 public class CourseController {
     @Autowired
     private CourseService courseService;
+    @GetMapping("findAll")
+    public Result findAll() {
+        List<Course> list = courseService.findlist();
+        return Result.ok(list);
+    }
 
     @ApiOperation("点播课程列表")
     @GetMapping(value = "/{page}/{limit}")
