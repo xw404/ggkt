@@ -13,4 +13,5 @@ import com.baomidou.mybatisplus.extension.service.IService;
  */
 public interface LiveCourseDescriptionService extends IService<LiveCourseDescription> {
 
+    LiveCourseDescription getLiveCourseById(Long id);
 }

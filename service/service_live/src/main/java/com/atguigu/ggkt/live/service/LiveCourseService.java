@@ -20,4 +20,12 @@ public interface LiveCourseService extends IService<LiveCourse> {
     IPage<LiveCourse> selectPage(Page<LiveCourse> pageParam);
 
     void saveLive(LiveCourseFormVo liveCourseVo);
+
+    void removeLive(Long id);
+
+    //查询课程的基本信息和描述信息
+    LiveCourseFormVo getLiveCourseFormVo(Long id);
+
+    //更新直播课程信息
+    void updateLiveById(LiveCourseFormVo liveCourseVo);
 }
