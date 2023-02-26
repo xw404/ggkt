@@ -6,6 +6,9 @@ import lombok.Data;
 
 import java.util.Date;
 
+/**
+ * 前端页面传过来的参数类
+ */
 @Data
 public class LiveCourseFormVo {
 	

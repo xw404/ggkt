@@ -16,9 +16,12 @@ import com.atguigu.ggkt.utils.AuthContextHolder;
 import com.atguigu.ggkt.utils.OrderNoUtils;
 import com.atguigu.ggkt.vo.order.OrderFormVo;
 import com.atguigu.ggkt.vo.order.OrderInfoQueryVo;
+import com.atguigu.ggkt.vo.order.OrderInfoVo;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
+import com.fasterxml.jackson.databind.util.BeanUtil;
+import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.util.StringUtils;
@@ -122,6 +125,30 @@ public class OrderInfoServiceImpl extends ServiceImpl<OrderInfoMapper, OrderInfo
         }
         //8 返回订单id
         return orderInfo.getId();
+    }
+    //根据订单号查询订单详情
+    @Override
+    public OrderInfoVo getOrderInfoVoById(Long id) {
+        //id查询订单基本信息和详情信息
+        OrderInfo orderInfo = baseMapper.selectById(id);
+        OrderDetail orderDetail = orderDetailService.getById(id);
+        //封装到orderInfoVo对象中
+        OrderInfoVo orderInfoVo = new OrderInfoVo();
+        orderInfoVo.setCourseId(orderDetail.getCourseId());
+        orderInfoVo.setCourseName(orderDetail.getCourseName());
+        return orderInfoVo;
+    }
+
+    @Override
+    public void updateOrderStatus(String out_trade_no) {
+        //根据订单号查询订单
+        LambdaQueryWrapper<OrderInfo> wrapper = new LambdaQueryWrapper<>();
+        wrapper.eq(OrderInfo::getOutTradeNo,out_trade_no);
+        OrderInfo orderInfo = baseMapper.selectOne(wrapper);
+        //设置订单状态
+        orderInfo.setOrderStatus("1");
+        //调用方法
+        baseMapper.updateById(orderInfo);
     }
 
     //订单列表

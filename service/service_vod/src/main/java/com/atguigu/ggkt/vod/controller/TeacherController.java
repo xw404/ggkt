@@ -145,5 +145,13 @@ public class TeacherController {
             return Result.fail();
         }
     }
+
+    //根据ID查询信息  远程调用
+    @ApiOperation("根据ID查询信息")
+    @GetMapping("inner/getTeacher/{id}")
+    public Teacher getTeacherInfo(@PathVariable long id){
+        Teacher teacher = teacherService.getById(id);
+        return teacher;
+    }
 }
 

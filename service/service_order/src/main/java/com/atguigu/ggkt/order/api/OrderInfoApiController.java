@@ -3,11 +3,9 @@ package com.atguigu.ggkt.order.api;
 import com.atguigu.ggkt.order.service.OrderInfoService;
 import com.atguigu.ggkt.result.Result;
 import com.atguigu.ggkt.vo.order.OrderFormVo;
+import com.atguigu.ggkt.vo.order.OrderInfoVo;
 import io.swagger.annotations.ApiOperation;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import javax.annotation.Resource;
 import javax.servlet.http.HttpServletRequest;
@@ -29,5 +27,13 @@ public class OrderInfoApiController {
         //返回订单id
         Long orderId = orderInfoService.submitOrder(orderFormVo);
         return Result.ok(orderId);
+    }
+
+    //根据订单号码获取订单详情
+    @ApiOperation(value = "获取")
+    @GetMapping("getInfo/{id}")
+    public Result getInfo(@PathVariable Long id) {
+        OrderInfoVo orderInfoVo = orderInfoService.getOrderInfoVoById(id);
+        return Result.ok(orderInfoVo);
     }
 }
