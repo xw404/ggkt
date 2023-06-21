@@ -1,2 +1,3 @@
 # ggkt
-Learn some notes from the ggkt
+硅谷课堂项目的一部分学习记录
+
